@@ -1,0 +1,175 @@
+https://www.youtube.com/watch?v=Sa_kQheCnds&list=PL-osiE80TeTtoQCKZ03TU5fNfx2UY6U4p&index=17
+
+Usamos una maquina virtual de linode con Ubuntu.
+Para conectarnos usamos ssh. (ssh root@172.233.96.49)
+Instalamos actualizaciones en el servidor
+apt-get update && apt-get upgrade
+
+Cambiamos el nombre del host 
+hostnamectl set-hostname django-server
+
+nano /etc/host:
+127.0.0.1       localhost
+172.233.96.49   django-server
+
+adduser alvarogpi
+adduser alvarogpi sudo
+exit
+
+Accedemos con nuestro usuario nuevo
+ssh alvarogpi@172.233.96.49
+
+Creamos las keys para poder acceder
+
+Creamos el directorio en el servidor
+mkdir ~/.ssh
+
+Creamos las keys
+
+ssh-keygen -b 4096
+
+Subimos la clave publica al server
+
+scp ~./.ssh/clavePublic.pub alvarogpi@ip:~/.ssh/authorized_keys
+
+Cambiamos permisos en directorio y ficheros
+
+chmod 700 ~/.ssh
+chmod 600 ~/.ssh/*
+
+Cambiamos los permisos para no poder acceder por contraseña ni root
+sudo nano /etc/ssh/sshd_config
+
+PermitRootLogin no, PasswordAuthentication no
+
+Refrescamos el servicio
+sudo systemctl daemon-reload
+sudo systemctl restart ssh.socket
+
+Instalamos firewall 
+
+sudo apt-get install ufw
+sudo ufw default allow outgoing
+sudo ufw default deny incoming
+sudo ufw allow ssh
+sudo ufw allow 8000
+sudo ufw enable
+sudo ufw status
+
+-----------
+
+Ahora que tenemos todo preparado vamos a subir la app al servidor, para ello lo ideal es haber usado un
+entorno virtual, pero si no podemos crearlo en la raiz del proyecto con 
+
+py -m venv venv
+
+venv\Scripts\activate
+
+Debemos instalar todos las dependencias que hayamos usado en el proyecto ahora
+
+Una vez hecho podemos crear el fichero de requisitos en la raiz del proyecto
+
+pip freeze > requirements.txt
+
+----------------
+
+subimos el proyecto
+
+scp -r rutaProyecto user@ip:~/
+(scp -r pruebaDjango alvarogpi@172.233.96.49:~/)
+
+----------------
+
+Instalamos python y el entorno virtual en el servidor
+
+sudo apt-get install python3-pip
+sudo apt-get install python3-venv
+
+python3 -m venv pruebadjango/venv
+
+source venv/bin/activate (o en windows venv/Scripts/activate)
+
+-------
+Cambiamos la configuracion de Django en el servidor
+sudo nano pruebaDjango/pruebaDjango/settings.py
+
+ALLOWED_HOSTS = ['ip_del_servidor'] (172.233.96.49)
+STATIC_ROOT = os.path.join(BASE_DIR,'static')
+--------------------
+
+Creamos la carpeta static para sus ficheros
+python manage.py collectstatic
+
+
+Con el siguiente comando ya seria accesible desde cualquier navegador
+python manage.py runserver 0.0.0.0:8000
+
+--------------
+Configuramos Apache para hostear la aplicacion y wsgi como interfaz entre el servidor y python
+sudo apt-get install apache2
+sudo apt-get install libapache2-mod-wsgi-py3
+
+cd /etc/apache2/sites-available/
+
+cp
+
+Mapeamos con alias las requests que empiecen con static y media.
+Ademas damos permisos a WSGI a nuestro proyecto
+
+ sudo cp 000-default.conf pruebadjango.conf (copiamos una plantilla de configuracion con el nombre del proyecto)
+ sudo nano pruebadjango.conf:
+
+        Alias /static /home/alvarogpi/pruebadjango/static
+        <Directory /home/alvarogpi/pruebadjango/static>
+                Require all granted
+        </Directory>
+
+        Alias /media /home/alvarogpi/pruebadjango/media
+        <Directory /home/alvarogpi/pruebadjango/media>
+                Require all granted
+        </Directory>
+
+        <Directory /home/alvarogpi/pruebadjango/pruebadjango>
+                <Files wsgi.py>
+                        Require all granted
+                </Files>
+        </Directory>
+
+        WSGIScriptAlias / /home/alvarogpi/pruebadjango/pruebadjango/wsgi.py
+        WSGIDaemonProcess django_app python-path=/home/alvarogpi/pruebadjango python-home=/home/alvar>
+        WSGIProcessGroup django_app
+
+Habilitamos la web con apache
+
+sudo a2ensite /home/alvaro/pruebadjango
+
+Deshabilitamos el sitio por defecto
+sudo a2dissite 000-default.conf
+
+Modificamos permisos para que apache pueda leer los ficheros del proyecto
+Cambiamos a apache como propietario de la bbdd
+sudo chown :www-data pruebadjango/db.sqlite3
+sudo chmod 664 pruebadjango/db.sqlite3
+sudo chown :www-data pruebadjango/
+sudo chown -R :www-data ~/pruebadjango/media/
+sudo chmod -R 775 ~/pruebadjango/media/
+
+Creamos un fichero de configuracion para informacion sensible, como credenciales, secret key
+sudo touch /etc/blog-config.json
+
+sudo nano /etc/blog-config.json:
+
+{
+        "SECRET_KEY":"django-insecure-d4q(bct6=j94rz3b$*jc*q1_i64%wf8v!6v#q-u6)&&v_iw=4s",
+        "EMAIL_USER":"garciapicazaalvaro@gmail.com",
+        "EMAIL_PASS":"txzh efze pvtt nnql"
+}
+
+
+En el fichero de pruebadjang/settings.py:
+
+with open('/etc/blog-config.json') as config_file:
+     config = json.load(config_file)
+	 
+SECRET_KEY = config['SECRET_KEY']
+DEBUG = False

@@ -1,0 +1,13 @@
+In [1]: import json
+
+In [2]: from blog.models import Post
+
+In [4]: with open("posts.json") as f:
+   ...:     posts_json = json.load(f)
+   ...:
+
+In [7]: for post in posts_json:
+   ...:     post = Post(title=post['title'],content=post['content'],author_id=post['user_id'])
+   ...:
+
+In [8]: post.save()

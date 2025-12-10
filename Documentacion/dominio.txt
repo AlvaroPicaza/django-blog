@@ -1,0 +1,23 @@
+Algunos servicios de venta de dominio
+
+namecheap
+Dynadot
+godaddy
+
+El registro del dominio en el servidor depende del proveedor de cloud o servicio donde tengamos alojado el servidor
+Linode: https://techdocs.akamai.com/cloud-computing/docs/getting-started-with-dns-manager
+
+En el servidor de dominio debemos incluir los nameservers de Linode:
+
+ns1.linode.com
+ns2.linode.com
+etc
+
+Una vez seguida la documentacion del proveedor del servidor debemos incluir el nombre en settings.py
+
+ALLOWED_HOSTS = ['ip_servidor','www.nombreDominio.com']
+
+sudo service apache2 restart
+
+Para poder acceder sin el www delante del dominio podemos incluir un registro AAAA en la configuracion del dominio
+en Linode donde el hostname este vacio

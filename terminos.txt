@@ -1,0 +1,118 @@
+ðŸ§© TÃ©rminos clave en Django
+ðŸ“Œ 1. Model
+
+Representa la estructura de datos.
+Cada model es una clase de Python que se convierte en una tabla de base de datos.
+
+Ejemplo:
+
+class Producto(models.Model):
+    nombre = models.CharField(max_length=100)
+    precio = models.DecimalField(max_digits=5, decimal_places=2)
+
+ðŸ“Œ 2. View
+
+Es la l¨®gica de la aplicaci¨®n.
+Una view recibe una petici¨®n (request), procesa datos y devuelve una respuesta (response), normalmente un HTML.
+
+Ejemplo:
+
+def productos(request):
+    lista = Producto.objects.all()
+    return render(request, "productos.html", {"productos": lista})
+
+ðŸ“Œ 3. Template
+
+Archivos HTML donde se muestra la informaci¨®n.
+Usan la sintaxis de Django: {{ }} para imprimir valores y {% %} para l¨®gica.
+
+Ejemplo:
+
+{% for p in productos %}
+  <p>{{ p.nombre }} â€?{{ p.precio }}</p>
+{% endfor %}
+
+ðŸ“Œ 4. URL (urls.py)
+
+Asocia una ruta del navegador con una vista (view).
+
+Ejemplo:
+
+urlpatterns = [
+    path("productos/", views.productos),
+]
+
+ðŸ“Œ 5. ORM (Object-Relational Mapper)
+
+Sistema de Django para trabajar con bases de datos usando Python en lugar de SQL.
+
+Ejemplo:
+
+Producto.objects.filter(precio__lt=10)
+
+ðŸ“Œ 6. Admin
+
+Interfaz administrativa automÃ¡tica creada por Django para gestionar modelos.
+
+Ejemplo de registro:
+
+admin.site.register(Producto)
+
+ðŸ“Œ 7. Forms
+
+Manejo de formularios HTML con validaci¨®n y conversi¨®n automÃ¡tica de datos.
+
+Ejemplo:
+
+class ProductoForm(forms.Form):
+    nombre = forms.CharField()
+
+ðŸ“Œ 8. Migrations
+
+Archivos que guardan los cambios en los modelos para sincronizarlos con la base de datos.
+
+Comandos:
+
+python manage.py makemigrations
+python manage.py migrate
+
+ðŸ“Œ 9. App (Aplicaci¨®n)
+
+Un m¨®dulo dentro del proyecto que agrupa modelos, vistas y otros componentes.
+Django recomienda dividir tu proyecto en varias apps independientes.
+
+ðŸ“Œ 10. Middleware
+
+Funciones que procesan la petici¨®n antes y/o despuÃ©s de pasar por las vistas.
+Se usa para autenticaci¨®n, seguridad, sesiones, etc.
+
+ðŸ“Œ 11. Static Files
+
+Archivos como CSS, JS e imÃ¡genes que no cambian dinÃ¡micamente.
+
+Ruta tÃ­pica:
+
+static/mi_app/style.css
+
+ðŸ“Œ 12. Context
+
+Diccionario con datos enviados desde la vista al template.
+
+Ejemplo:
+
+return render(request, "index.html", {"nombre": "Ana"})
+
+ðŸ“š Resumen ultra rÃ¡pido
+TÃ©rmino	Significado
+Model	Define datos (tablas).
+View	L¨®gica del servidor.
+Template	HTML dinÃ¡mico.
+URL	Conecta rutas con vistas.
+ORM	Acceso a DB sin SQL.
+Admin	Panel automÃ¡tico de administraci¨®n.
+Forms	Formularios + validaci¨®n.
+Migrations	Cambios de modelos â†?DB.
+App	M¨®dulo funcional del proyecto.
+Middleware	Procesamiento global de peticiones.
+Static files	CSS/JS/Imagenes.
+Context	Datos pasados a una plantilla.

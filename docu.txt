@@ -1,0 +1,24 @@
+py manage.py startproject nombreProyecto
+py manage.py runserver 
+py manage.py startapp nombreNuevaApp (esto crea una nueva app en el proyecto ya creado)
+
+1-Cuando creamos una nueva app en el proyecto se debe incluir en la lista de apps en settings.py 
+(hay que incluir el path al fichero apps.py, por ejemplo blog.apps.BlogConfig)
+
+#Para realizar las migraciones y crear las bases de datos por defectos
+
+py manage.py makemigrations
+py manage.py migrate
+py manage.py createsuperuser
+
+
+5-Para crear bases de datos usamos los models, clases gestionadas por Django. Cualquier cambio que se haga
+en estos ficheros debe actualizarse con py manage.py makemigrations y py manage.py sqlmigrate directorio migrationNumber 
+(por ejemplo py manage.py sqlmigrate blog 0001), py manage.py migrate
+
+Para abrir una shell de bbdd py manage.py shell
+
+from blog.models import Post # importamos el modelo que hayamos creado
+from django.contrib.auth.models import User
+
+Post.objects.all()
